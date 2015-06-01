@@ -5,6 +5,7 @@ using System.Linq;
 using System;
 
 using Kinect = Windows.Kinect;
+using InControl;
 
 public class KinectAvatar : MonoBehaviour 
 {
@@ -12,6 +13,12 @@ public class KinectAvatar : MonoBehaviour
     public float BodyScale = 6f;
     public bool ShowJoints = true;
     public bool ShowJointConnections = true;
+
+    [Range(0, 20)]
+    public float PositionSmoothing = 10f;
+
+    [Range(0, 20)]
+    public float RotationSmoothing = 10f;
 
     public Dictionary<Kinect.JointType, Transform> JointMapping = new Dictionary<Kinect.JointType, Transform>();
     public Dictionary<Kinect.JointType, LineRenderer> JointLineMapping = new Dictionary<Kinect.JointType, LineRenderer>();
@@ -132,8 +139,18 @@ public class KinectAvatar : MonoBehaviour
             }
 
             Transform jointObj = JointMapping[jt];
-            jointObj.localPosition = Unmirror(sourceJoint.Position.GetVector3()) * BodyScale;
-            jointObj.localRotation = sourceOrientation.GetQuaternion();
+            Vector3 mewPosition = Unmirror(sourceJoint.Position.GetVector3()) * BodyScale;
+            Quaternion mewRotation = sourceOrientation.GetQuaternion();
+            if (FirstDataSet)
+            {
+                jointObj.localPosition = mewPosition;
+                jointObj.localRotation = mewRotation;
+            }
+            else
+            {
+                jointObj.localPosition = Vector3.Lerp(jointObj.localPosition, mewPosition, Time.deltaTime * PositionSmoothing);
+                jointObj.localRotation = Quaternion.Lerp(jointObj.localRotation, mewRotation, Time.deltaTime * RotationSmoothing);
+            }
 
             if (ShowJointConnections == true)
             {
@@ -165,6 +182,17 @@ public class KinectAvatar : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (InputManager.Devices != null && InputManager.Devices.Count > 0)
+        {
+            if (InputManager.Devices.Any(device => device.MenuWasPressed))
+            {
+                OVRManager.display.RecenterPose();
+            }
+        }
+    }
+
     public virtual void Kill()
     {
         CurrentlyActiveAvatar = false;
@@ -175,7 +203,7 @@ public class KinectAvatar : MonoBehaviour
     {
         Kinect.JointType left = GetClosestPreviousTrackedJoint(Kinect.JointType.FootLeft);
         Kinect.JointType right = GetClosestPreviousTrackedJoint(Kinect.JointType.FootRight);
-        return Vector3.Lerp(JointMapping[Kinect.JointType.FootLeft].position, JointMapping[Kinect.JointType.FootRight].position, 0.5f);
+        return Vector3.Lerp(JointMapping[left].position, JointMapping[right].position, 0.5f);
     }
 
     private Kinect.JointType GetClosestPreviousTrackedJoint(Kinect.JointType jointtype)

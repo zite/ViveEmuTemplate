@@ -73,6 +73,10 @@ public class BodySourceView : MonoBehaviour
                 if (Avatars.ContainsKey(body.TrackingId) == false)
                 {
                     GameObject newAvatar = GameObject.Instantiate<GameObject>(AvatarPrefab);
+                    newAvatar.transform.parent = this.transform; //localize position to the kinect manager
+                    newAvatar.transform.localPosition = Vector3.zero;
+                    newAvatar.transform.localRotation = Quaternion.identity;
+
                     KinectAvatar avatar = newAvatar.GetComponent<KinectAvatar>();
                     avatar.Id = body.TrackingId;
 
@@ -88,27 +92,5 @@ public class BodySourceView : MonoBehaviour
             CurrentAvatarID = Avatars.OrderBy(avatar => avatar.Value.GetDistanceToKinect()).First().Key;
             Avatars[CurrentAvatarID].SetActiveAvatar();
         }
-    }
-    
-    
-    
-    private static Color GetColorForState(Kinect.TrackingState state)
-    {
-        switch (state)
-        {
-        case Kinect.TrackingState.Tracked:
-            return Color.green;
-
-        case Kinect.TrackingState.Inferred:
-            return Color.red;
-
-        default:
-            return Color.black;
-        }
-    }
-    
-    private static Vector3 GetVector3FromJoint(Kinect.Joint joint)
-    {
-        return new Vector3(joint.Position.X * 10, joint.Position.Y * 10, joint.Position.Z * 10);
     }
 }

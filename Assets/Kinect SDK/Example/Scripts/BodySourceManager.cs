@@ -12,7 +12,16 @@ public class BodySourceManager : MonoBehaviour
     {
         return _Data;
     }
-    
+
+    private void Awake()
+    {
+        /*Transform KinectRepresentation = this.transform.Find("Kinect");
+        if (KinectRepresentation != null)
+        {
+            foreach (Renderer renderer in this.transform.Find("Kinect").GetComponentsInChildren<Renderer>())
+                renderer.enabled = false;
+        }*/
+    }
 
     private void Start () 
     {
