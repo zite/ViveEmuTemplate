@@ -17,7 +17,6 @@ public class WallCheck : MonoBehaviour
     private Kinect.JointType[] CheckJoints = new Kinect.JointType[] { Kinect.JointType.HandRight, Kinect.JointType.HandLeft, Kinect.JointType.Head };
     private Vector3[] directions = new Vector3[] { Vector3.forward, Vector3.back, Vector3.right, Vector3.left };
 
-    private BodySourceView BodyView;
 
     private void Awake()
     {
@@ -33,19 +32,18 @@ public class WallCheck : MonoBehaviour
         }
 
         wallLayerMask = 1 << this.gameObject.layer;
-        BodyView = GameObject.FindObjectOfType<BodySourceView>();
     }
 
     void Update() 
     {
-        if (BodyView == null || BodyView.CurrentAvatar == null)
+        if (KinectManager.Instance == null || KinectManager.Instance.CurrentAvatar == null)
             return;
 
         float smallestDistance = float.MaxValue;
 
         foreach (Kinect.JointType joint in CheckJoints)
         {
-            float distance = CheckWallsFor(BodyView.CurrentAvatar.JointMapping[joint]);
+            float distance = CheckWallsFor(KinectManager.Instance.CurrentAvatar.JointMapping[joint]);
 
             if (distance < smallestDistance)
                 smallestDistance = distance;

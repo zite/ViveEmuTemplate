@@ -11,8 +11,6 @@ public class Builder : MonoBehaviour
     public GameObject AimPrefab;
     public GameObject BulletPrefab;
 
-    private BodySourceView BodyView;
-
     private Transform[] SelectedObject = new Transform[2];
     private Color[] CurrentColors = new Color[2];
     private ColorWheel[] ColorWheels = new ColorWheel[2];
@@ -22,21 +20,23 @@ public class Builder : MonoBehaviour
 
     private void Awake()
     {
-        BodyView = GameObject.FindObjectOfType<BodySourceView>();
         BuiltLayer = LayerMask.NameToLayer("Built");
     }
 
     private void Update()
     {
-        if (BodyView.CurrentAvatar == null)
+        KinectAvatar avatar = KinectManager.Instance.CurrentAvatar;
+
+        if (avatar == null)
             return;
+
 
         InputDevice leftController = null;
         InputDevice rightController = null;
 
         if (InputManager.Devices.Count >= 2)
-        {
-            leftController = InputManager.Devices[0];
+        { //more often than not this means player 1 in the left hand and player 2 in the right hand
+            leftController = InputManager.Devices[0]; 
             rightController = InputManager.Devices[1];
         }
         else if (InputManager.Devices.Count == 1)
@@ -50,16 +50,16 @@ public class Builder : MonoBehaviour
             return;
         }
 
-        CheckController(leftController.LeftTrigger, leftController.LeftBumper, leftController.LeftStickButton, leftController.LeftStick, 0, BodyView.CurrentAvatar.GetLeftHandRay());
-        CheckController(rightController.RightTrigger, rightController.RightBumper, rightController.RightStickButton, rightController.RightStick, 1, BodyView.CurrentAvatar.GetRightHandRay());
+        CheckController(leftController.LeftTrigger, leftController.LeftBumper, leftController.LeftStickButton, leftController.LeftStick, 0, avatar.GetLeftHandRay());
+        CheckController(rightController.RightTrigger, rightController.RightBumper, rightController.RightStickButton, rightController.RightStick, 1, avatar.GetRightHandRay());
     }
 
-    private IEnumerator PopIn(Transform obj)
+    private IEnumerator PopIn(Transform obj) // scale up the cube from "nothing"
     {
         float overTime = 0.15f;
         float startTime = Time.time;
         float endTime = startTime + overTime;
-        
+
         Vector3 startScale = Vector3.one * 0.01f;
         Vector3 endScale = Vector3.one;
 
@@ -80,7 +80,7 @@ public class Builder : MonoBehaviour
         {
             if (SelectedObject[selectedNum] == null)
             {
-                Collider[] hits = Physics.OverlapSphere(controller.origin, 0.1f, 1 << BuiltLayer);;
+                Collider[] hits = Physics.OverlapSphere(controller.origin, 0.1f, 1 << BuiltLayer); ;
                 if (hits.Length > 0)
                 {
                     Collider closest = hits.OrderBy(hit => Vector3.Distance(hit.transform.position, controller.origin)).First();
@@ -101,6 +101,7 @@ public class Builder : MonoBehaviour
         else
             SelectedObject[selectedNum] = null;
 
+
         if (stickButton.IsPressed)
         {
             if (ColorWheels[selectedNum] == null)
@@ -114,13 +115,14 @@ public class Builder : MonoBehaviour
                 SelectedObject[selectedNum].GetComponent<Renderer>().material.color = CurrentColors[selectedNum];
 
             ColorWheels[selectedNum].transform.position = controller.origin;
-            ColorWheels[selectedNum].transform.LookAt(BodyView.CurrentAvatar.Head);
+            ColorWheels[selectedNum].transform.LookAt(KinectManager.Instance.CurrentAvatar.Head);
         }
         else
         {
             if (ColorWheels[selectedNum] != null)
                 Destroy(ColorWheels[selectedNum].gameObject);
         }
+
 
         if (bumper.IsPressed)
         {

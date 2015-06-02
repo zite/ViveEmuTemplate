@@ -9,24 +9,39 @@ using InControl;
 
 public class KinectAvatar : MonoBehaviour 
 {
+    [Tooltip("This avatar's ID as assigned by the Kinect")]
     public ulong Id;
+
+    [Tooltip("The number of units to multiply each joint's position by")]
     public float BodyScale = 6f;
+
+    [Tooltip("Shows cubes at joint locations")]
     public bool ShowJoints = true;
+
+    [Tooltip("Connects joints with line renderers to show tracking confidence")]
     public bool ShowJointConnections = true;
 
+    [Tooltip("How much smoothing to apply to position data (larger numbers mean faster movement)")]
     [Range(0, 20)]
     public float PositionSmoothing = 10f;
 
+    [Tooltip("How much smoothing to apply to rotational data (larger numbers mean faster rotation)")]
     [Range(0, 20)]
     public float RotationSmoothing = 10f;
 
+    /// <summary>The Kinect.JointType to Unity transform mapping</summary>
     public Dictionary<Kinect.JointType, Transform> JointMapping = new Dictionary<Kinect.JointType, Transform>();
+
+    /// <summary>The Kinect.JointType to Unity line renderer mapping</summary>
     public Dictionary<Kinect.JointType, LineRenderer> JointLineMapping = new Dictionary<Kinect.JointType, LineRenderer>();
 
+    /// <summary>The last instance of the kinect data for this avatar</summary>
     protected Kinect.Body LastBodyData;
 
+    /// <summary>Whether or not we've gotten any data for this avatar yet</summary>
     private bool FirstDataSet = false;
 
+    /// <summary>Whether or not this is the avatar that gets the OVR tracking</summary>
     private bool CurrentlyActiveAvatar = false;
 
     public Transform RightHand
@@ -53,6 +68,7 @@ public class KinectAvatar : MonoBehaviour
         }
     }
 
+    /// <summary>Used to order joints and connect them with line renderers</summary>
     protected Dictionary<Kinect.JointType, Kinect.JointType> JointConnections = new Dictionary<Kinect.JointType, Kinect.JointType>()
     {
         { Kinect.JointType.FootLeft, Kinect.JointType.AnkleLeft },
@@ -120,7 +136,7 @@ public class KinectAvatar : MonoBehaviour
 
     protected virtual void Initialize()
     {
-
+        //do extra initialization stuff here. This is called after this avatar has processed its first data set.
     }
 
     public void UpdateBodyData(Kinect.Body body)
