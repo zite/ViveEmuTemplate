@@ -143,15 +143,18 @@ public class KinectAvatar : MonoBehaviour
     {
         LastBodyData = body;
 
+        var jointUpdates = body.Joints; //the kinect sdk makes a new dictionary EVERY CALL to .Joints and .JointOrientations
+        var jointOrientations = body.JointOrientations;
+
         for (Kinect.JointType jt = Kinect.JointType.SpineBase; jt <= Kinect.JointType.ThumbRight; jt++)
         {
-            Kinect.Joint sourceJoint = body.Joints[jt];
-            Kinect.Vector4 sourceOrientation = body.JointOrientations[jt].Orientation;
+            Kinect.Joint sourceJoint = jointUpdates[jt];
+            Kinect.Vector4 sourceOrientation = jointOrientations[jt].Orientation;
             Kinect.Joint? targetJoint = null;
 
             if (JointConnections.ContainsKey(jt))
             {
-                targetJoint = body.Joints[JointConnections[jt]];
+                targetJoint = jointUpdates[JointConnections[jt]];
             }
 
             Transform jointObj = JointMapping[jt];
